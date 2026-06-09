@@ -1,88 +1,104 @@
-# TP2 / TP2A — Pipeline Airflow PokeAPI
+# TP2 — Apache Airflow
 
-## Stack
+Ce dépôt contient deux projets indépendants, chacun avec sa propre stack Docker.
 
-- Apache Airflow 2.9.2
-- PostgreSQL 15
-- Docker
+```
+tp2/
+├── TP_1_2/   ← TP2 + TP2A — PokéAPI (stack légère, pas de MinIO)
+└── TP2B/     ← TP2B — Open-Meteo + MinIO + PostgreSQL
+```
 
-## Lancer le projet
+---
+
+## TP_1_2 — Pokémon (TP2 + TP2A)
+
+**Source :** [PokeAPI](https://pokeapi.co)  
+**Stack :** Airflow + PostgreSQL
+
+### Deux DAGs dans ce projet
+
+| DAG | Description |
+|---|---|
+| `tp2_pokemon_pipeline` | Pipeline de base — extraction, transformation, rapport dans les logs |
+| `tp2a_pokemon_ingestion` | Pipeline structuré — extraction par génération, transformation, chargement PostgreSQL |
+
+### Pipeline TP2
+
+```
+extract_pokemon → transform_pokemon → report_pokemon
+```
+
+Calcule un score global (`hp + attack + defense + speed`) sur les 20 premiers Pokémon et affiche le classement dans les logs. Les données transitent via XCom.
+
+### Pipeline TP2A
+
+```
+extract_pokemon → transform_pokemon → report_pokemon → load_pokemon
+```
+
+3 générations de Pokémon jouent le rôle de 3 sources distinctes. Les données sont chargées dans une table `pokemon_stats` avec déduplication (`ON CONFLICT`).
+
+### Lancer
 
 ```bash
+cd TP_1_2
 docker compose up -d
-```
-
-Interface : http://localhost:8080 — `admin` / `admin`
-
----
-
-## TP2 — Pipeline de base
-
-**DAG** : `tp2_pokemon_pipeline`
-
-### Pipeline
-
-`extract_pokemon` → `transform_pokemon` → `report_pokemon`
-
-1. **extract_pokemon** — récupère les 20 premiers Pokémon depuis PokeAPI avec leurs stats brutes
-2. **transform_pokemon** — calcule un score global (`hp + attack + defense + speed`), filtre les Pokémon avec score > 200, trie par score décroissant
-3. **report_pokemon** — affiche le classement final dans les logs
-
-Les données transitent entre les tâches via XCom :
-
-```sql
-SELECT task_id, key FROM xcom;
+# http://localhost:8080  →  admin / admin
 ```
 
 ---
 
-## TP2A — Ingestion API (structure exploitable)
+## TP2B — Météo (Open-Meteo → MinIO → PostgreSQL)
 
-**DAG** : `tp2a_pokemon_ingestion`
-
-### Sujet
-
-Préparer une ingestion propre depuis une API externe pour plusieurs sources distinctes, avec séparation stricte entre récupération brute et transformation en structure exploitable.
-
-3 générations de Pokémon jouent le rôle des 3 villes du sujet météo original.
+**Source :** [Open-Meteo](https://open-meteo.com) (API publique, sans clé)  
+**Stack :** Airflow + PostgreSQL + MinIO
 
 ### Pipeline
 
-`extract_pokemon` → `transform_pokemon` → `report_pokemon` → `load_pokemon`
+```
+fetch_weather → save_to_minio → transform_weather → load_weather → write_ingestion_log
+```
 
-1. **extract_pokemon** — appelle PokeAPI pour chaque génération, stocke le JSON complet sans logique métier
-2. **transform_pokemon** — identifie les champs utiles, restructure en vue de la table cible, calcule le score
-3. **report_pokemon** — affiche un aperçu des données préparées par génération dans les logs
-4. **load_pokemon** — crée la table `pokemon_stats` si absente, insère les données (`ON CONFLICT` pour éviter les doublons)
-
-### Champs retenus et justification
-
-| Champ | Source | Pourquoi |
-|---|---|---|
-| `id` | API | Identifiant unique, clé primaire naturelle |
-| `name` | API | Nom lisible, exploitable dans tous les rapports |
-| `groupe` | Pipeline | Génération d'origine, permet de filtrer par source |
-| `hp` | API `stats` | Jauge de survie, indicateur de robustesse |
-| `attack` | API `stats` | Stat offensive principale |
-| `defense` | API `stats` | Stat défensive principale |
-| `speed` | API `stats` | Détermine l'ordre d'action, critère de classement |
-| `score` | Calculé | `hp + attack + defense + speed`, résumé de puissance globale |
-| `types` | API | Type(s) du Pokémon, utile pour analyses croisées |
-| `extracted_at` | Pipeline | Timestamp d'ingestion, trace la fraîcheur des données |
-
-### Champs écartés
-
-| Champ | Raison |
+| Tâche | Rôle |
 |---|---|
-| `sprites` | URLs d'images, inutile pour une table analytique |
-| `moves` | 100+ moves par Pokémon, hors scope |
-| `abilities` | Non pertinent pour un scoring de puissance |
-| `base_experience` | Donnée de progression, pas une stat de combat |
+| `fetch_weather` | Appelle Open-Meteo pour chaque ville (Paris, Lyon, Marseille…) |
+| `save_to_minio` | Stocke le JSON brut dans MinIO (`raw-meteo/{run_id}/{ville}.json`) |
+| `transform_weather` | Lit depuis MinIO, structure les données |
+| `load_weather` | INSERT dans `weather_facts` avec déduplication |
+| `write_ingestion_log` | Écrit une ligne de traçabilité dans `ingestion_log` |
 
-### Résultat en base
+MinIO sert de **couche raw** entre l'extraction et la transformation : si la transformation a un bug, on la rejoue sans re-appeler l'API.
 
-Après exécution du DAG :
+### Lancer
 
-```sql
-SELECT * FROM pokemon_stats ORDER BY score DESC;
+```bash
+cd TP2B
+mkdir -p logs plugins
+docker compose up -d
+# http://localhost:8080  →  Airflow   (admin / admin)
+# http://localhost:9001  →  MinIO UI  (minio_access_key / minio_secret_key)
+# psql -h localhost -p 5433 -U meteo_user -d meteo_db
 ```
+
+### Paramétrage (Variables Airflow — Admin > Variables)
+
+| Variable | Défaut | Rôle |
+|---|---|---|
+| `meteo_cities` | `["Paris","Lyon","Marseille","Bordeaux","Lille"]` | Villes à ingérer |
+| `meteo_fields` | `temperature_2m,precipitation,...` | Champs API |
+| `meteo_raw_bucket` | `raw-meteo` | Bucket MinIO brut |
+| `meteo_target_table` | `weather_facts` | Table cible |
+| `meteo_tracking_table` | `ingestion_log` | Table de suivi |
+
+---
+
+## Comparatif des deux projets
+
+| | TP_1_2 (Pokémon) | TP2B (Météo) |
+|---|---|---|
+| Source | PokéAPI | Open-Meteo |
+| Stockage intermédiaire | XCom Airflow | MinIO (object storage) |
+| Base cible | `pokemon_stats` | `weather_facts` |
+| Traçabilité | — | `ingestion_log` |
+| Services Docker | Airflow + PostgreSQL | Airflow + PostgreSQL + MinIO |
+| Stratégie chargement | ON CONFLICT DO NOTHING | ON CONFLICT DO NOTHING |

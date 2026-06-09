@@ -5,39 +5,33 @@ TP 2B — Pipeline complet : Open-Meteo → MinIO (raw) → transformation → P
 Architecture du DAG
 -------------------
 fetch_weather
-    └── save_to_minio          ← stockage du JSON brut dans le data lake
+    └── save_to_minio
             └── transform_weather
                     └── load_weather
                             └── write_ingestion_log
 
-Pourquoi MinIO entre fetch et transform ?
------------------------------------------
-- Couche "raw" : on conserve la réponse brute de l'API telle quelle.
-  Si la transformation a un bug, on peut rejouer uniquement transform_weather
-  sans re-appeler l'API (économie de requêtes, rejeu fiable).
-- Auditabilité : on peut inspecter ce qu'on a vraiment reçu de la source
-  à n'importe quel moment.
-- Architecture réaliste : en production, le raw landing en object storage
-  est un pattern standard (S3, GCS, Azure Blob...).
+Paramétrage — zéro hardcode
+-----------------------------
+Toute la configuration passe par Airflow, sans valeur figée dans le code :
 
-Structure MinIO
----------------
-  raw-meteo/
-    {run_id}/
-      {city}.json      ← réponse brute Open-Meteo par ville
+  Variables Airflow (Admin > Variables) — paramètres métier et techniques :
+    meteo_cities          : JSON array des villes
+    meteo_fields          : champs API Open-Meteo
+    meteo_api_base_url    : URL de base de l'API
+    meteo_api_timeout     : timeout HTTP en secondes
+    meteo_raw_bucket      : bucket MinIO pour le raw
+    meteo_processed_bucket: bucket MinIO pour le processed
+    meteo_schema          : schéma PostgreSQL
+    meteo_target_table    : table cible
+    meteo_tracking_table  : table de suivi
 
-  processed-meteo/     ← bucket disponible pour étapes futures (staging, etc.)
-
-Paramétrage (Variables Airflow)
---------------------------------
-  meteo_cities, meteo_fields, meteo_schema,
-  meteo_target_table, meteo_tracking_table,
-  meteo_raw_bucket, meteo_processed_bucket
-
-Connexions Airflow
-------------------
-  postgres_meteo  → postgres-meteo:5432/meteo_db
-  minio_meteo     → MinIO via S3-compatible API (endpoint http://minio:9000)
+  Connections Airflow (Admin > Connections) — credentials :
+    postgres_meteo : connexion PostgreSQL (host, port, login, password, schema)
+    minio_meteo    : connexion MinIO
+                     - Conn Type : Amazon Web Services
+                     - Login     : access key
+                     - Password  : secret key
+                     - Extra     : {"endpoint_url": "http://minio:9000"}
 """
 
 from __future__ import annotations
@@ -50,6 +44,7 @@ from io import BytesIO
 import boto3
 import requests
 from airflow.decorators import dag, task
+from airflow.hooks.base import BaseHook
 from airflow.models import Variable
 from airflow.providers.postgres.hooks.postgres import PostgresHook
 from airflow.utils.dates import days_ago
@@ -65,35 +60,42 @@ default_args = {
 }
 
 CONN_POSTGRES = "postgres_meteo"
-API_BASE_URL  = "https://api.open-meteo.com/v1/forecast"
-API_TIMEOUT_S = 30
+CONN_MINIO    = "minio_meteo"
 
-# Coordonnées des villes supportées
 CITY_COORDS: dict[str, dict] = {
-    "Paris":             {"latitude": 48.8566, "longitude": 2.3522},
-    "Lyon":              {"latitude": 45.7640, "longitude": 4.8357},
-    "Marseille":         {"latitude": 43.2965, "longitude": 5.3698},
-    "Bordeaux":          {"latitude": 44.8378, "longitude": -0.5792},
-    "Lille":             {"latitude": 50.6292, "longitude": 3.0573},
-    "Clermont-Ferrand":  {"latitude": 45.7772, "longitude": 3.0870},
-    "Nantes":            {"latitude": 47.2184, "longitude": -1.5536},
-    "Strasbourg":        {"latitude": 48.5734, "longitude": 7.7521},
+    "Paris":            {"latitude": 48.8566, "longitude": 2.3522},
+    "Lyon":             {"latitude": 45.7640, "longitude": 4.8357},
+    "Marseille":        {"latitude": 43.2965, "longitude": 5.3698},
+    "Bordeaux":         {"latitude": 44.8378, "longitude": -0.5792},
+    "Lille":            {"latitude": 50.6292, "longitude": 3.0573},
+    "Clermont-Ferrand": {"latitude": 45.7772, "longitude": 3.0870},
+    "Nantes":           {"latitude": 47.2184, "longitude": -1.5536},
+    "Strasbourg":       {"latitude": 48.5734, "longitude": 7.7521},
 }
 
 
 def _get_minio_client() -> boto3.client:
     """
-    Retourne un client boto3 pointant sur MinIO.
-    On utilise boto3 directement (API S3-compatible) plutôt que le hook
-    S3 d'Airflow pour garder le contrôle sur l'endpoint custom.
+    Construit un client boto3 à partir de la Connection Airflow 'minio_meteo'.
+    Les credentials ne sont jamais dans le code — ils viennent d'Airflow.
+
+    Connection attendue (Admin > Connections) :
+      Conn Type : Amazon Web Services
+      Login     : access key MinIO
+      Password  : secret key MinIO
+      Extra     : {"endpoint_url": "http://minio:9000"}
     """
+    conn = BaseHook.get_connection(CONN_MINIO)
+    extra = json.loads(conn.extra) if conn.extra else {}
+    endpoint_url = extra.get("endpoint_url", "http://minio:9000")
+
     return boto3.client(
         "s3",
-        endpoint_url="http://minio:9000",
-        aws_access_key_id="minio_access_key",
-        aws_secret_access_key="minio_secret_key",
+        endpoint_url=endpoint_url,
+        aws_access_key_id=conn.login,
+        aws_secret_access_key=conn.password,
         config=Config(signature_version="s3v4"),
-        region_name="us-east-1",   # valeur quelconque, requise par boto3
+        region_name="us-east-1",
     )
 
 
@@ -116,11 +118,20 @@ def tp2b_meteo_pipeline():
     def fetch_weather(**context) -> dict:
         """
         Appelle l'API Open-Meteo pour chaque ville.
-        Retourne le JSON brut par ville + métadonnées.
-        Ne transforme rien, ne stocke rien.
+        URL et timeout viennent des Variables Airflow.
         """
-        cities: list[str] = json.loads(Variable.get("meteo_cities"))
-        fields: str = Variable.get("meteo_fields")
+        cities: list[str] = json.loads(
+            Variable.get("meteo_cities", default_var='["Paris", "Lyon", "Marseille", "Bordeaux", "Lille"]')
+        )
+        fields: str = Variable.get(
+            "meteo_fields",
+            default_var="temperature_2m,precipitation,windspeed_10m,weathercode",
+        )
+        base_url: str = Variable.get(
+            "meteo_api_base_url",
+            default_var="https://api.open-meteo.com/v1/forecast",
+        )
+        timeout: int = int(Variable.get("meteo_api_timeout", default_var="30"))
 
         log.info("Villes : %s | Champs : %s", cities, fields)
 
@@ -141,12 +152,13 @@ def tp2b_meteo_pipeline():
                 "forecast_days": 1,
             }
 
-            resp = requests.get(API_BASE_URL, params=params, timeout=API_TIMEOUT_S)
+            resp = requests.get(base_url, params=params, timeout=timeout)
             resp.raise_for_status()
             data = resp.json()
             raw_results[city] = data
-            rows_received += len(data.get("hourly", {}).get("time", []))
-            log.info("  ✓ %s — %d mesures reçues", city, len(data.get("hourly", {}).get("time", [])))
+            nb = len(data.get("hourly", {}).get("time", []))
+            rows_received += nb
+            log.info("  ✓ %s — %d mesures reçues", city, nb)
 
         log.info("Extraction terminée — %d mesures brutes", rows_received)
 
@@ -157,22 +169,13 @@ def tp2b_meteo_pipeline():
         }
 
     # ─────────────────────────────────────────────────────────────────────────
-    # TÂCHE 2 — Sauvegarde du brut dans MinIO (couche raw)
+    # TÂCHE 2 — Sauvegarde du brut dans MinIO
     # ─────────────────────────────────────────────────────────────────────────
     @task(task_id="save_to_minio")
     def save_to_minio(fetch_result: dict, **context) -> dict:
         """
-        Écrit le JSON brut de chaque ville dans MinIO sous :
-            raw-meteo/{run_id}/{city}.json
-
-        Pourquoi une tâche séparée et pas dans fetch ?
-        → Séparation des responsabilités : fetch connaît l'API,
-          save_to_minio connaît le stockage. Si on change de stockage
-          (S3, GCS...), on ne touche qu'ici.
-
-        Pourquoi {run_id} dans le chemin ?
-        → Partitionnement par run : chaque exécution a son propre
-          "dossier". Pas d'écrasement entre runs, rejoue propres.
+        Écrit le JSON brut dans MinIO : raw-meteo/{run_id}/{city}.json
+        Le client MinIO est construit depuis la Connection Airflow 'minio_meteo'.
         """
         raw_results: dict = fetch_result["raw"]
         run_id: str = context["run_id"]
@@ -205,31 +208,23 @@ def tp2b_meteo_pipeline():
         }
 
     # ─────────────────────────────────────────────────────────────────────────
-    # TÂCHE 3 — Transformation : lecture depuis MinIO + structuration
+    # TÂCHE 3 — Transformation : lecture MinIO → structuration
     # ─────────────────────────────────────────────────────────────────────────
     @task(task_id="transform_weather")
     def transform_weather(minio_result: dict, **context) -> dict:
         """
-        Lit les fichiers JSON bruts depuis MinIO et les transforme en lignes
-        structurées prêtes pour l'insertion PostgreSQL.
-
-        Pourquoi lire depuis MinIO plutôt que depuis le XCom de fetch ?
-        → Les XComs Airflow sont stockés en base (PostgreSQL metadata).
-          Pour de gros volumes de données, passer par MinIO est la bonne
-          pratique : le XCom ne transporte que des métadonnées (clés S3),
-          la donnée réelle transite par le stockage objet.
-          Ici le volume est petit, mais on adopte le bon pattern dès le début.
+        Lit les JSON bruts depuis MinIO et les transforme en lignes
+        prêtes pour l'insertion PostgreSQL.
         """
-        run_id: str = minio_result["run_id"]
         bucket: str = minio_result["bucket"]
         saved_keys: list[str] = minio_result["saved_keys"]
         airflow_run_id: str = context["run_id"]
 
         STAT_MAP = {
-            "temperature_2m":  ("temperature_c",    lambda v: v),
-            "precipitation":   ("precipitation_mm", lambda v: v),
-            "windspeed_10m":   ("windspeed_kmh",    lambda v: v),
-            "weathercode":     ("weathercode",      lambda v: int(v) if v is not None else None),
+            "temperature_2m": ("temperature_c",    lambda v: v),
+            "precipitation":  ("precipitation_mm", lambda v: v),
+            "windspeed_10m":  ("windspeed_kmh",    lambda v: v),
+            "weathercode":    ("weathercode",      lambda v: int(v) if v is not None else None),
         }
 
         s3 = _get_minio_client()
@@ -279,7 +274,7 @@ def tp2b_meteo_pipeline():
     @task(task_id="load_weather")
     def load_weather(transform_result: dict, **context) -> dict:
         """
-        Insère les lignes transformées dans public.weather_facts.
+        INSERT dans weather_facts via la Connection Airflow 'postgres_meteo'.
         ON CONFLICT DO NOTHING : idempotent, safe pour les rejeux.
         """
         rows: list[dict] = transform_result["rows"]
@@ -332,21 +327,20 @@ def tp2b_meteo_pipeline():
     @task(task_id="write_ingestion_log")
     def write_ingestion_log(load_result: dict, minio_result: dict, **context) -> None:
         """
-        Insère une ligne de suivi dans public.ingestion_log.
-        On enrichit avec le chemin MinIO raw pour pouvoir retrouver
-        la donnée source de ce run précis.
+        Insère une ligne de suivi dans ingestion_log.
+        Inclut le chemin MinIO raw pour pouvoir auditer la donnée source.
         """
-        cities: list[str]  = json.loads(Variable.get("meteo_cities"))
-        schema: str        = Variable.get("meteo_schema", default_var="public")
+        cities: list[str]   = json.loads(
+            Variable.get("meteo_cities", default_var='["Paris", "Lyon", "Marseille", "Bordeaux", "Lille"]')
+        )
+        schema: str         = Variable.get("meteo_schema", default_var="public")
         tracking_table: str = Variable.get("meteo_tracking_table", default_var="ingestion_log")
 
-        dag_id = context["dag"].dag_id
-        run_id = context["run_id"]
+        dag_id              = context["dag"].dag_id
+        run_id              = context["run_id"]
         data_interval_start = context.get("data_interval_start")
         data_interval_end   = context.get("data_interval_end")
-
-        # Chemin MinIO du raw de ce run (pour audit)
-        raw_path = f"s3://{minio_result['bucket']}/{minio_result['run_id']}/"
+        raw_path            = f"s3://{minio_result['bucket']}/{minio_result['run_id']}/"
 
         hook   = PostgresHook(postgres_conn_id=CONN_POSTGRES)
         conn   = hook.get_conn()

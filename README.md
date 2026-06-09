@@ -86,22 +86,3 @@ Après exécution du DAG :
 ```sql
 SELECT * FROM pokemon_stats ORDER BY score DESC;
 ```
-
-### Générer les données localement (sans Airflow)
-
-```bash
-pip install requests
-python generate_local_data.py
-```
-
-Génère un fichier `pokemon_stats.csv` avec les 30 Pokémon et leurs stats, sans avoir besoin de lancer Docker.
-
----
-
-## Push GitHub
-
-```bash
-git add .
-git commit -m "TP2A - Ingestion PokeAPI avec load PostgreSQL"
-git push
-```

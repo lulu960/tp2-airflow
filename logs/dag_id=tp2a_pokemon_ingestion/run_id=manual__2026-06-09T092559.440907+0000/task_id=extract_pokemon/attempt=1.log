@@ -1,0 +1,54 @@
+[2026-06-09T09:26:00.426+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-06-09T09:26:00.456+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: tp2a_pokemon_ingestion.extract_pokemon manual__2026-06-09T09:25:59.440907+00:00 [queued]>
+[2026-06-09T09:26:00.463+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: tp2a_pokemon_ingestion.extract_pokemon manual__2026-06-09T09:25:59.440907+00:00 [queued]>
+[2026-06-09T09:26:00.463+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2026-06-09T09:26:00.475+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): extract_pokemon> on 2026-06-09 09:25:59.440907+00:00
+[2026-06-09T09:26:00.483+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'tp2a_pokemon_ingestion', 'extract_pokemon', 'manual__2026-06-09T09:25:59.440907+00:00', '--job-id', '29', '--raw', '--subdir', 'DAGS_FOLDER/dag_tp2a_pokemon_ingestion.py', '--cfg-path', '/tmp/tmpcc1gg7e0']
+[2026-06-09T09:26:00.485+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=309) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-06-09T09:26:00.486+0000] {standard_task_runner.py:91} INFO - Job 29: Subtask extract_pokemon
+[2026-06-09T09:26:00.486+0000] {standard_task_runner.py:63} INFO - Started process 310 to run task
+[2026-06-09T09:26:00.547+0000] {task_command.py:426} INFO - Running <TaskInstance: tp2a_pokemon_ingestion.extract_pokemon manual__2026-06-09T09:25:59.440907+00:00 [running]> on host 2964019bb692
+[2026-06-09T09:26:00.634+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='lucas' AIRFLOW_CTX_DAG_ID='tp2a_pokemon_ingestion' AIRFLOW_CTX_TASK_ID='extract_pokemon' AIRFLOW_CTX_EXECUTION_DATE='2026-06-09T09:25:59.440907+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-06-09T09:25:59.440907+00:00'
+[2026-06-09T09:26:00.636+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-06-09T09:26:00.668+0000] {dag_tp2a_pokemon_ingestion.py:59} INFO - Groupe 'generation_1' — 10 Pokémon à récupérer...
+[2026-06-09T09:26:00.837+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #1 bulbasaur OK
+[2026-06-09T09:26:00.930+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #2 ivysaur OK
+[2026-06-09T09:26:01.023+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #3 venusaur OK
+[2026-06-09T09:26:01.122+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #4 charmander OK
+[2026-06-09T09:26:01.210+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #5 charmeleon OK
+[2026-06-09T09:26:01.309+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #6 charizard OK
+[2026-06-09T09:26:01.407+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #7 squirtle OK
+[2026-06-09T09:26:01.498+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #8 wartortle OK
+[2026-06-09T09:26:01.590+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #9 blastoise OK
+[2026-06-09T09:26:01.838+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #10 caterpie OK
+[2026-06-09T09:26:01.839+0000] {dag_tp2a_pokemon_ingestion.py:71} INFO - Groupe 'generation_1' termine — 10 entrées brutes.
+[2026-06-09T09:26:01.839+0000] {dag_tp2a_pokemon_ingestion.py:59} INFO - Groupe 'generation_2' — 10 Pokémon à récupérer...
+[2026-06-09T09:26:01.929+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #152 chikorita OK
+[2026-06-09T09:26:02.014+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #153 bayleef OK
+[2026-06-09T09:26:02.100+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #154 meganium OK
+[2026-06-09T09:26:02.188+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #155 cyndaquil OK
+[2026-06-09T09:26:02.275+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #156 quilava OK
+[2026-06-09T09:26:02.363+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #157 typhlosion OK
+[2026-06-09T09:26:02.446+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #158 totodile OK
+[2026-06-09T09:26:02.533+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #159 croconaw OK
+[2026-06-09T09:26:02.673+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #160 feraligatr OK
+[2026-06-09T09:26:02.764+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #161 sentret OK
+[2026-06-09T09:26:02.765+0000] {dag_tp2a_pokemon_ingestion.py:71} INFO - Groupe 'generation_2' termine — 10 entrées brutes.
+[2026-06-09T09:26:02.765+0000] {dag_tp2a_pokemon_ingestion.py:59} INFO - Groupe 'generation_3' — 10 Pokémon à récupérer...
+[2026-06-09T09:26:02.852+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #252 treecko OK
+[2026-06-09T09:26:02.937+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #253 grovyle OK
+[2026-06-09T09:26:03.029+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #254 sceptile OK
+[2026-06-09T09:26:03.121+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #255 torchic OK
+[2026-06-09T09:26:03.208+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #256 combusken OK
+[2026-06-09T09:26:06.320+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #257 blaziken OK
+[2026-06-09T09:26:06.413+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #258 mudkip OK
+[2026-06-09T09:26:06.518+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #259 marshtomp OK
+[2026-06-09T09:26:06.606+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #260 swampert OK
+[2026-06-09T09:26:06.698+0000] {dag_tp2a_pokemon_ingestion.py:68} INFO -   -> #261 poochyena OK
+[2026-06-09T09:26:06.698+0000] {dag_tp2a_pokemon_ingestion.py:71} INFO - Groupe 'generation_3' termine — 10 entrées brutes.
+[2026-06-09T09:26:07.029+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-06-09T09:26:07.030+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-06-09T09:26:07.039+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=tp2a_pokemon_ingestion, task_id=extract_pokemon, run_id=manual__2026-06-09T09:25:59.440907+00:00, execution_date=20260609T092559, start_date=20260609T092600, end_date=20260609T092607
+[2026-06-09T09:26:07.076+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2026-06-09T09:26:07.096+0000] {taskinstance.py:3503} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-06-09T09:26:07.098+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

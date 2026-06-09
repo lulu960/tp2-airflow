@@ -1,0 +1,60 @@
+[2026-06-09T09:26:09.450+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-06-09T09:26:09.482+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: tp2a_pokemon_ingestion.report_pokemon manual__2026-06-09T09:25:59.440907+00:00 [queued]>
+[2026-06-09T09:26:09.489+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: tp2a_pokemon_ingestion.report_pokemon manual__2026-06-09T09:25:59.440907+00:00 [queued]>
+[2026-06-09T09:26:09.490+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2026-06-09T09:26:09.503+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): report_pokemon> on 2026-06-09 09:25:59.440907+00:00
+[2026-06-09T09:26:09.511+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'tp2a_pokemon_ingestion', 'report_pokemon', 'manual__2026-06-09T09:25:59.440907+00:00', '--job-id', '31', '--raw', '--subdir', 'DAGS_FOLDER/dag_tp2a_pokemon_ingestion.py', '--cfg-path', '/tmp/tmp7emk0jl_']
+[2026-06-09T09:26:09.514+0000] {standard_task_runner.py:91} INFO - Job 31: Subtask report_pokemon
+[2026-06-09T09:26:09.514+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=313) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-06-09T09:26:09.515+0000] {standard_task_runner.py:63} INFO - Started process 314 to run task
+[2026-06-09T09:26:09.571+0000] {task_command.py:426} INFO - Running <TaskInstance: tp2a_pokemon_ingestion.report_pokemon manual__2026-06-09T09:25:59.440907+00:00 [running]> on host 2964019bb692
+[2026-06-09T09:26:09.657+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='lucas' AIRFLOW_CTX_DAG_ID='tp2a_pokemon_ingestion' AIRFLOW_CTX_TASK_ID='report_pokemon' AIRFLOW_CTX_EXECUTION_DATE='2026-06-09T09:25:59.440907+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-06-09T09:25:59.440907+00:00'
+[2026-06-09T09:26:09.657+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-06-09T09:26:09.678+0000] {dag_tp2a_pokemon_ingestion.py:156} INFO - ========== APERCU DES DONNEES PREPAREES ==========
+[2026-06-09T09:26:09.679+0000] {dag_tp2a_pokemon_ingestion.py:157} INFO - Total : 30 entrées prêtes pour la table cible
+[2026-06-09T09:26:09.679+0000] {dag_tp2a_pokemon_ingestion.py:158} INFO - Champs : id | name | groupe | hp | atk | def | spd | score | types | extracted_at
+[2026-06-09T09:26:09.679+0000] {dag_tp2a_pokemon_ingestion.py:159} INFO - ----------------------------------------------------------------------
+[2026-06-09T09:26:09.679+0000] {dag_tp2a_pokemon_ingestion.py:163} INFO - --- GENERATION_1 (10 Pokémon) ---
+[2026-06-09T09:26:09.680+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - charizard    hp=78   atk=84   def=78   spd=100  score=340   types=fire/flying
+[2026-06-09T09:26:09.680+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - blastoise    hp=79   atk=83   def=100  spd=78   score=340   types=water
+[2026-06-09T09:26:09.680+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - venusaur     hp=80   atk=82   def=83   spd=80   score=325   types=grass/poison
+[2026-06-09T09:26:09.681+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - charmeleon   hp=58   atk=64   def=58   spd=80   score=260   types=fire
+[2026-06-09T09:26:09.681+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - wartortle    hp=59   atk=63   def=80   spd=58   score=260   types=water
+[2026-06-09T09:26:09.681+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - ivysaur      hp=60   atk=62   def=63   spd=60   score=245   types=grass/poison
+[2026-06-09T09:26:09.681+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - squirtle     hp=44   atk=48   def=65   spd=43   score=200   types=water
+[2026-06-09T09:26:09.682+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - charmander   hp=39   atk=52   def=43   spd=65   score=199   types=fire
+[2026-06-09T09:26:09.682+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - bulbasaur    hp=45   atk=49   def=49   spd=45   score=188   types=grass/poison
+[2026-06-09T09:26:09.682+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - caterpie     hp=45   atk=30   def=35   spd=45   score=155   types=bug
+[2026-06-09T09:26:09.683+0000] {dag_tp2a_pokemon_ingestion.py:163} INFO - --- GENERATION_2 (10 Pokémon) ---
+[2026-06-09T09:26:09.683+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - feraligatr   hp=85   atk=105  def=100  spd=78   score=368   types=water
+[2026-06-09T09:26:09.683+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - meganium     hp=80   atk=82   def=100  spd=80   score=342   types=grass
+[2026-06-09T09:26:09.683+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - typhlosion   hp=78   atk=84   def=78   spd=100  score=340   types=fire
+[2026-06-09T09:26:09.684+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - croconaw     hp=65   atk=80   def=80   spd=58   score=283   types=water
+[2026-06-09T09:26:09.684+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - bayleef      hp=60   atk=62   def=80   spd=60   score=262   types=grass
+[2026-06-09T09:26:09.684+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - quilava      hp=58   atk=64   def=58   spd=80   score=260   types=fire
+[2026-06-09T09:26:09.685+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - totodile     hp=50   atk=65   def=64   spd=43   score=222   types=water
+[2026-06-09T09:26:09.685+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - chikorita    hp=45   atk=49   def=65   spd=45   score=204   types=grass
+[2026-06-09T09:26:09.685+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - cyndaquil    hp=39   atk=52   def=43   spd=65   score=199   types=fire
+[2026-06-09T09:26:09.685+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - sentret      hp=35   atk=46   def=34   spd=20   score=135   types=normal
+[2026-06-09T09:26:09.686+0000] {dag_tp2a_pokemon_ingestion.py:163} INFO - --- GENERATION_3 (10 Pokémon) ---
+[2026-06-09T09:26:09.686+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - swampert     hp=100  atk=110  def=90   spd=60   score=360   types=water/ground
+[2026-06-09T09:26:09.686+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - blaziken     hp=80   atk=120  def=70   spd=80   score=350   types=fire/fighting
+[2026-06-09T09:26:09.686+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - sceptile     hp=70   atk=85   def=65   spd=120  score=340   types=grass
+[2026-06-09T09:26:09.687+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - marshtomp    hp=70   atk=85   def=70   spd=50   score=275   types=water/ground
+[2026-06-09T09:26:09.687+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - combusken    hp=60   atk=85   def=60   spd=55   score=260   types=fire/fighting
+[2026-06-09T09:26:09.687+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - grovyle      hp=50   atk=65   def=45   spd=95   score=255   types=grass
+[2026-06-09T09:26:09.688+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - mudkip       hp=50   atk=70   def=50   spd=40   score=210   types=water
+[2026-06-09T09:26:09.688+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - treecko      hp=40   atk=45   def=35   spd=70   score=190   types=grass
+[2026-06-09T09:26:09.688+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - torchic      hp=45   atk=60   def=40   spd=45   score=190   types=fire
+[2026-06-09T09:26:09.688+0000] {dag_tp2a_pokemon_ingestion.py:166} INFO - poochyena    hp=35   atk=55   def=35   spd=35   score=160   types=dark
+[2026-06-09T09:26:09.689+0000] {dag_tp2a_pokemon_ingestion.py:171} INFO - Top 3 global :
+[2026-06-09T09:26:09.689+0000] {dag_tp2a_pokemon_ingestion.py:173} INFO -   1. feraligatr (score=368, groupe=generation_2)
+[2026-06-09T09:26:09.689+0000] {dag_tp2a_pokemon_ingestion.py:173} INFO -   2. swampert (score=360, groupe=generation_3)
+[2026-06-09T09:26:09.690+0000] {dag_tp2a_pokemon_ingestion.py:173} INFO -   3. blaziken (score=350, groupe=generation_3)
+[2026-06-09T09:26:09.690+0000] {dag_tp2a_pokemon_ingestion.py:175} INFO - ===================================================
+[2026-06-09T09:26:09.690+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-06-09T09:26:09.690+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-06-09T09:26:09.699+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=tp2a_pokemon_ingestion, task_id=report_pokemon, run_id=manual__2026-06-09T09:25:59.440907+00:00, execution_date=20260609T092559, start_date=20260609T092609, end_date=20260609T092609
+[2026-06-09T09:26:09.729+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2026-06-09T09:26:09.748+0000] {taskinstance.py:3503} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-06-09T09:26:09.752+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

@@ -1,0 +1,20 @@
+[2026-06-09T09:26:07.330+0000] {local_task_job_runner.py:120} INFO - ::group::Pre task execution logs
+[2026-06-09T09:26:07.372+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=non-requeueable deps ti=<TaskInstance: tp2a_pokemon_ingestion.transform_pokemon manual__2026-06-09T09:25:59.440907+00:00 [queued]>
+[2026-06-09T09:26:07.379+0000] {taskinstance.py:2076} INFO - Dependencies all met for dep_context=requeueable deps ti=<TaskInstance: tp2a_pokemon_ingestion.transform_pokemon manual__2026-06-09T09:25:59.440907+00:00 [queued]>
+[2026-06-09T09:26:07.380+0000] {taskinstance.py:2306} INFO - Starting attempt 1 of 2
+[2026-06-09T09:26:07.396+0000] {taskinstance.py:2330} INFO - Executing <Task(PythonOperator): transform_pokemon> on 2026-06-09 09:25:59.440907+00:00
+[2026-06-09T09:26:07.403+0000] {standard_task_runner.py:90} INFO - Running: ['***', 'tasks', 'run', 'tp2a_pokemon_ingestion', 'transform_pokemon', 'manual__2026-06-09T09:25:59.440907+00:00', '--job-id', '30', '--raw', '--subdir', 'DAGS_FOLDER/dag_tp2a_pokemon_ingestion.py', '--cfg-path', '/tmp/tmpd9ko_kk_']
+[2026-06-09T09:26:07.405+0000] {logging_mixin.py:188} WARNING - /home/***/.local/lib/python3.12/site-packages/***/task/task_runner/standard_task_runner.py:61 DeprecationWarning: This process (pid=311) is multi-threaded, use of fork() may lead to deadlocks in the child.
+[2026-06-09T09:26:07.405+0000] {standard_task_runner.py:91} INFO - Job 30: Subtask transform_pokemon
+[2026-06-09T09:26:07.406+0000] {standard_task_runner.py:63} INFO - Started process 312 to run task
+[2026-06-09T09:26:07.462+0000] {task_command.py:426} INFO - Running <TaskInstance: tp2a_pokemon_ingestion.transform_pokemon manual__2026-06-09T09:25:59.440907+00:00 [running]> on host 2964019bb692
+[2026-06-09T09:26:07.562+0000] {taskinstance.py:2648} INFO - Exporting env vars: AIRFLOW_CTX_DAG_OWNER='lucas' AIRFLOW_CTX_DAG_ID='tp2a_pokemon_ingestion' AIRFLOW_CTX_TASK_ID='transform_pokemon' AIRFLOW_CTX_EXECUTION_DATE='2026-06-09T09:25:59.440907+00:00' AIRFLOW_CTX_TRY_NUMBER='1' AIRFLOW_CTX_DAG_RUN_ID='manual__2026-06-09T09:25:59.440907+00:00'
+[2026-06-09T09:26:07.563+0000] {taskinstance.py:430} INFO - ::endgroup::
+[2026-06-09T09:26:08.525+0000] {dag_tp2a_pokemon_ingestion.py:135} INFO - 30 Pokémon transformés sur 30 bruts.
+[2026-06-09T09:26:08.526+0000] {dag_tp2a_pokemon_ingestion.py:140} INFO - Champs retenus : id, name, groupe, hp, attack, defense, speed, score, types, extracted_at
+[2026-06-09T09:26:08.556+0000] {python.py:237} INFO - Done. Returned value was: None
+[2026-06-09T09:26:08.557+0000] {taskinstance.py:441} INFO - ::group::Post task execution logs
+[2026-06-09T09:26:08.565+0000] {taskinstance.py:1206} INFO - Marking task as SUCCESS. dag_id=tp2a_pokemon_ingestion, task_id=transform_pokemon, run_id=manual__2026-06-09T09:25:59.440907+00:00, execution_date=20260609T092559, start_date=20260609T092607, end_date=20260609T092608
+[2026-06-09T09:26:08.623+0000] {local_task_job_runner.py:240} INFO - Task exited with return code 0
+[2026-06-09T09:26:08.645+0000] {taskinstance.py:3503} INFO - 1 downstream tasks scheduled from follow-on schedule check
+[2026-06-09T09:26:08.649+0000] {local_task_job_runner.py:222} INFO - ::endgroup::

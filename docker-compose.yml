@@ -32,8 +32,12 @@ services:
       _AIRFLOW_WWW_USER_CREATE: "true"
       _AIRFLOW_WWW_USER_USERNAME: admin
       _AIRFLOW_WWW_USER_PASSWORD: admin
+      AIRFLOW__LOGGING__REMOTE_LOGGING: "false"
+      AIRFLOW__LOGGING__BASE_LOG_FOLDER: /opt/airflow/logs
+      AIRFLOW__CORE__HOSTNAME_CALLABLE: "socket:getfqdn"
     volumes:
       - ./dags:/opt/airflow/dags
+      - ./logs:/opt/airflow/logs  
     ports:
       - "8080:8080"
     command: standalone

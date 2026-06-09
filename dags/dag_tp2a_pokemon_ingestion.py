@@ -32,7 +32,7 @@ DB_CONN = {
 }
 
 # ─────────────────────────────────────────────────────────────
-# Groupes de Pokémon (équivalent des "villes" du sujet météo)
+# Groupes de Pokémon
 # On interroge 3 générations distinctes comme 3 sources séparées
 # ─────────────────────────────────────────────────────────────
 GROUPES = {

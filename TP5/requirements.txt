@@ -1,0 +1,4 @@
+# botocore doit rester < 1.34.132 à cause de aiobotocore déjà installé dans l'image Airflow
+botocore==1.34.131
+boto3==1.34.131
+apache-airflow-providers-amazon==8.26.0
